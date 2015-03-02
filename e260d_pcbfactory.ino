@@ -4,12 +4,14 @@
  */
 /* todo fix pinout */
 
-#define MFPS 5 // manual feed paper sensor
-#define PIS 6  // paper in sensor
-#define ES 4   // exit sensor
+#define MFPS 8 // manual feed paper sensor
+#define PIS 9  // paper in sensor
+#define ES 10   // exit sensor
 
-#define NMFPS 3 // our new manual feed paper sensor the X button // pin 3 // 1 when x pressed 0 when not
-#define NPIS 2  // our new paper in sensor on center bracket // pin 2 // 1 when blocked 0 when not
+#define NMFPS 11 // our new manual feed paper sensor the X button // pin 3 // 0 when x pressed 1 when not
+#define NMFPS_LED 7 // Need to do a different bit cant drain the switch
+#define NPIS 12  // our new paper in sensor on center bracket // pin 2 // 0 when blocked 1 when not
+#define NPIS_LED 6
 
 volatile int pressed;
 volatile int loaded;
@@ -24,15 +26,63 @@ void setup()
   pinMode(MFPS, OUTPUT);
   pinMode(PIS, OUTPUT);
   pinMode(ES, OUTPUT);
-
+  pinMode(NMFPS_LED, OUTPUT);
+  pinMode(NPIS_LED, OUTPUT);
+  
   digitalWrite(MFPS, HIGH);
   digitalWrite(PIS, HIGH);
   digitalWrite(ES, HIGH);
 
   pinMode(NMFPS, INPUT);
   pinMode(NPIS, INPUT);
+}
+
+void loop()
+{
+  digitalWrite(MFPS, HIGH);
+  digitalWrite(PIS, HIGH);
+  digitalWrite(ES, HIGH);
+  digitalWrite(NMFPS_LED, digitalRead(NMFPS));
+  digitalWrite(NPIS_LED, digitalRead(NPIS));
+  if(!digitalRead(NMFPS)) {
+     delay(700);
+    digitalWrite(NMFPS_LED, digitalRead(NMFPS));
+    if(!digitalRead(NMFPS)) {
+      Serial.println("button was pressed");
+      button_pushed();
+      return;
+    }
+  }
+
+  delay(10);
+}
+
+void button_pushed()
+{
+  Serial.println("waiting for something to happen");
   delay(1000);
+  digitalWrite(MFPS, LOW);
+
+  while(1) {
+    Serial.print("waiting to print pcb ");
+    Serial.print(digitalRead(NMFPS));
+    Serial.print(" ");
+    Serial.println(digitalRead(NPIS));
+    
+    if(!digitalRead(NMFPS)) {
+      return;
+    }
+    if(!digitalRead(NPIS)) {
+      print_pcb();
+      return;
+    }
+    delay(5);
+  }
   
+}
+void print_pcb()
+{
+  Serial.println("printing pcb");
   digitalWrite(PIS, LOW);
   delay(1825);
   digitalWrite(ES, LOW);
@@ -42,128 +92,6 @@ void setup()
   digitalWrite(PIS, HIGH);
   delay(1875);
   digitalWrite(ES, HIGH);
-  //  attachInterrupt(NMFPS, x_pressed, LOW);
-  //  attachInterrupt(NPIS, page_in_slot, HIGH);
+  Serial.println("printed pcb");
+  return;
 }
-
-void loop()
-{
-  //  Serial.println("loop 1");
-  //  pressed = digitalRead(NMFPS);
-  pressed = Serial.available();
-  if (pressed) {
-    Serial.read();
-    Serial.println("pressed");
-    delay(10);
-    pressed = 0;
-    loaded = 0;
-    digitalWrite(MFPS, LOW);
-    while(digitalRead(NPIS)) {
-    }
-    //    pressed = Serial.available();
-    //    loaded = digitalRead(NPIS);
-    //    while (!pressed || !loaded) { // come back here later and add reset functionailty
-    //      if (pressed) {
-    //	Serial.read();
-    //        digitalWrite(MFPS, HIGH);
-    //	Serial.println("start over");
-    //        return;
-    //      }
-      Serial.println("printing");
-      digitalWrite(PIS, LOW);
-      delay(1825);
-      digitalWrite(ES, LOW);
-      delay(950);
-      digitalWrite(MFPS, HIGH);
-      delay(825);
-      digitalWrite(PIS, HIGH);
-      delay(1875);
-      digitalWrite(ES, HIGH);
-      if(Serial.available()) {
-      Serial.read(); }
-      pressed = 0;
-      loaded = 0;
-      return;
-    }
-}
-
-
-
-// /*
-//   pcb factory is code modeled after code from http://www.instructables.com/id/Modification-of-the-Lexmark-E260-for-Direct-Laser--1/?ALLSTEPS
-//   its inteded to make the lexmark e260d into a pcb printer.
-//  */
-// /* todo fix pinout */
-
-// #define MFPS 5 // manual feed paper sensor
-// #define PIS 6  // paper in sensor
-// #define ES 4   // exit sensor
-
-// #define NMFPS 1 // our new manual feed paper sensor the X button // pin 3
-// #define NPIS 0  // our new paper in sensor on center bracket // pin 2
-
-// volatile int pressed;
-// volatile int loaded;
-
-// void setup()
-// {
-//   Serial.begin(9600);
-//   Serial.println("starting up");
-//   pressed = 0;
-//   loaded = 0;
-
-//   pinMode(MFPS, OUTPUT);
-//   pinMode(PIS, OUTPUT);
-//   pinMode(ES, OUTPUT);
-
-//   digitalWrite(MFPS, HIGH);
-//   digitalWrite(PIS, HIGH);
-//   digitalWrite(ES, HIGH);
-
-
-//   attachInterrupt(NMFPS, x_pressed, LOW);
-//   attachInterrupt(NPIS, page_in_slot, HIGH);
-// }
-
-// void loop()
-// {
-//   //  Serial.println("loop 1");
-//   if (pressed) {
-//     Serial.println("pressed");
-//     pressed = 0;
-//     delay(1000);
-//     digitalWrite(MFPS, LOW);
-//     while (!pressed || !loaded) { // come back here later and add reset functionailty
-//       if (pressed) {
-//         digitalWrite(MFPS, HIGH);
-// 	Serial.println("start over");
-//         return;
-//       }
-//       Serial.println("printing");
-//       digitalWrite(PIS, LOW);
-//       delay(1825);
-//       digitalWrite(ES, LOW);
-//       delay(950);
-//       digitalWrite(MFPS, HIGH);
-//       delay(825);
-//       digitalWrite(PIS, HIGH);
-//       delay(1875);
-//       digitalWrite(ES, HIGH);
-
-//       pressed = 0;
-//       loaded = 0;
-//     }
-//   }
-// }
-
-// void x_pressed()
-// {
-//   pressed = 1;
-//   Serial.println("pressed int");
-// }
-
-// void page_in_slot()
-// {
-//   loaded = 1;
-//     Serial.println("in slot");
-// }
