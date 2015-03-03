@@ -9,26 +9,22 @@
 #define ES 10   // exit sensor
 
 #define NMFPS 11 // our new manual feed paper sensor the X button // pin 3 // 0 when x pressed 1 when not
-#define NMFPS_LED 7 // Need to do a different bit cant drain the switch
 #define NPIS 12  // our new paper in sensor on center bracket // pin 2 // 0 when blocked 1 when not
-#define NPIS_LED 6
 
 volatile int pressed;
 volatile int loaded;
 
 void setup()
 {
-  Serial.begin(9600);
-  Serial.println("starting up");
+  //  Serial.begin(9600);
+  //  Serial.println("starting up");
   pressed = 0;
   loaded = 0;
 
   pinMode(MFPS, OUTPUT);
   pinMode(PIS, OUTPUT);
   pinMode(ES, OUTPUT);
-  pinMode(NMFPS_LED, OUTPUT);
-  pinMode(NPIS_LED, OUTPUT);
-  
+
   digitalWrite(MFPS, HIGH);
   digitalWrite(PIS, HIGH);
   digitalWrite(ES, HIGH);
@@ -42,13 +38,11 @@ void loop()
   digitalWrite(MFPS, HIGH);
   digitalWrite(PIS, HIGH);
   digitalWrite(ES, HIGH);
-  digitalWrite(NMFPS_LED, digitalRead(NMFPS));
-  digitalWrite(NPIS_LED, digitalRead(NPIS));
-  if(!digitalRead(NMFPS)) {
-     delay(700);
-    digitalWrite(NMFPS_LED, digitalRead(NMFPS));
-    if(!digitalRead(NMFPS)) {
-      Serial.println("button was pressed");
+
+  if (!digitalRead(NMFPS)) {
+    delay(300);
+    if (!digitalRead(NMFPS)) {
+      //      Serial.println("button was pressed");
       button_pushed();
       return;
     }
@@ -59,30 +53,30 @@ void loop()
 
 void button_pushed()
 {
-  Serial.println("waiting for something to happen");
+  //  Serial.println("waiting for something to happen");
   delay(1000);
   digitalWrite(MFPS, LOW);
 
-  while(1) {
-    Serial.print("waiting to print pcb ");
-    Serial.print(digitalRead(NMFPS));
-    Serial.print(" ");
-    Serial.println(digitalRead(NPIS));
-    
-    if(!digitalRead(NMFPS)) {
+  while (1) {
+    //    Serial.print("waiting to print pcb ");
+    //    Serial.print(digitalRead(NMFPS));
+    //    Serial.print(" ");
+    //    Serial.println(digitalRead(NPIS));
+
+    if (!digitalRead(NMFPS)) {
       return;
     }
-    if(!digitalRead(NPIS)) {
+    if (!digitalRead(NPIS)) {
       print_pcb();
       return;
     }
-    delay(5);
+    //    delay(5);
   }
-  
+
 }
 void print_pcb()
 {
-  Serial.println("printing pcb");
+  //  Serial.println("printing pcb");
   digitalWrite(PIS, LOW);
   delay(1825);
   digitalWrite(ES, LOW);
@@ -92,6 +86,6 @@ void print_pcb()
   digitalWrite(PIS, HIGH);
   delay(1875);
   digitalWrite(ES, HIGH);
-  Serial.println("printed pcb");
+  //  Serial.println("printed pcb");
   return;
 }
